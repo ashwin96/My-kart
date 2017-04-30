@@ -9,6 +9,11 @@ var ejs = require('ejs');
 var cookieparser = require('cookie-parser');
 var session = require('express-session');
 var flash = require('express-flash');
+var mongostore = require('connect-mongo')(session);
+var passport = require('passport');
+
+
+
 var config = require('./config/config');
 mongoose.connect(config.database,function(err){
   if(err)
@@ -19,6 +24,8 @@ mongoose.connect(config.database,function(err){
 });
 var mainroute = require('./routes/main');
 var userroutes = require('./routes/user');
+
+
 app.use(express.static(__dirname+'/Public'));
 app.use(morgan('dev'));
 app.use(bodyparser.json());
@@ -28,12 +35,16 @@ app.use(session({
   resave:true,
   saveUninitialized:true,
   secret:config.secretKey,
+  store: new mongostore({url:config.database,autoReconnect:true})
 }));
 app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
 app.engine('ejs',ejsengine);
 app.set('view engine','ejs');
 app.use(mainroute);
 app.use(userroutes);
+
 
 app.listen(config.port,function (err) {
   if(err)
