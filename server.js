@@ -11,6 +11,7 @@ var session = require('express-session');
 var flash = require('express-flash');
 var mongostore = require('connect-mongo')(session);
 var passport = require('passport');
+var category = require('./models/category');
 
 
 
@@ -24,7 +25,8 @@ mongoose.connect(config.database,function(err){
 });
 var mainroute = require('./routes/main');
 var userroutes = require('./routes/user');
-
+var adminroutes = require('./routes/admin');
+var apiroutes = require('./api/api');
 
 app.use(express.static(__dirname+'/Public'));
 app.use(morgan('dev'));
@@ -42,9 +44,21 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.engine('ejs',ejsengine);
 app.set('view engine','ejs');
+app.use(function (req,res,next) {
+  res.locals.user = req.user;
+  next();
+});
+app.use(function (req,res,next) {
+  category.find({},function (err,category) {
+    if(err) return next(err);
+    res.locals.categories = category;
+    next();
+  })
+})
 app.use(mainroute);
 app.use(userroutes);
-
+app.use(adminroutes);
+app.use('/api',apiroutes);
 
 app.listen(config.port,function (err) {
   if(err)

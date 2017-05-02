@@ -12,9 +12,14 @@ router.post('/login',passport.authenticate('local-login',{
     failureRedirect:'/login',
     failureFlash:true
 }));
+router.get('/logout',function (req,res,err) {
+  req.logout();
+  res.redirect('/home');
+})
 router.get('/profile',function (req,res,next) {
   User.findOne({id:req.user.id},function (err,user) {
-    if(err) return next(err);
+    if(err)
+      res.redirect('/login');
     res.render('accounts/profile',{user:req.user});
   });
 });
@@ -41,7 +46,10 @@ router.post('/signup',function (req,res,err) {
               if(err)
                 return next(err);
               else {
-                res.redirect('/home');
+                req.logIn(user,function (err) {
+                  if(err) return next(err);
+                  res.redirect('/home');
+                })
               }
           })
         }

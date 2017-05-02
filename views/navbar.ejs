@@ -4,7 +4,31 @@
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
         <span class="sr-only">Toggle navigation</span>
       </button>
-      <a class="navbar-brand" href="#">MyKart</a>
+      <a class="navbar-brand" href="/home">MyKart</a>
     </div>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a class="dropdown-toggle" data-toggle="dropdown" href="#">Categories</a>
+        <ul class="dropdown-menu">
+          <% for(var i=0;i<categories.length;i++) {%>
+            <li><a href="/products/<%= categories[i].id%>"><%=categories[i].name%></a></li>
+          <%}%>
+        </ul>
+      </li>
+      <% if(!user) {%>
+      <li><a class="dropdown-toggle" data-toggle="dropdown" href="#">Signup / Login</a>
+        <ul class="dropdown-menu">
+          <li><a href='/signup'>Signup</a></li>
+          <li><a href='/login'>Login</a></li>
+        </ul>
+      </li>
+      <% } else { %>
+      <li><a class="dropdown-toggle" data-toggle="dropdown" href="#"><%=user.profile.name%></a>
+        <ul class="dropdown-menu">
+          <li><a href='/profile'>Profile</a></li>
+          <li><a href='/logout'>Logout</a></li>
+        </ul>
+      </li>
+      <%}%>
+    </ul>
   </div>
 </nav>
