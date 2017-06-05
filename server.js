@@ -12,7 +12,7 @@ var flash = require('express-flash');
 var mongostore = require('connect-mongo')(session);
 var passport = require('passport');
 var category = require('./models/category');
-
+var cartsize = require('./middleware/middleware');
 
 
 var config = require('./config/config');
@@ -39,14 +39,18 @@ app.use(session({
   secret:config.secretKey,
   store: new mongostore({url:config.database,autoReconnect:true})
 }));
+
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
-app.engine('ejs',ejsengine);
-app.set('view engine','ejs');
 app.use(function (req,res,next) {
   res.locals.user = req.user;
+  //res.locals.cart = cartsize.cartval;
   next();
+});
+
+app.use(function (req,res,next) {
+  cartsize(req,res,next);
 });
 app.use(function (req,res,next) {
   category.find({},function (err,category) {
@@ -55,6 +59,9 @@ app.use(function (req,res,next) {
     next();
   })
 })
+app.engine('ejs',ejsengine);
+app.set('view engine','ejs');
+
 app.use(mainroute);
 app.use(userroutes);
 app.use(adminroutes);

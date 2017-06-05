@@ -2,6 +2,8 @@ var router = require('express').Router();
 var User = require('../models/user');
 var passport = require('passport');
 var passportconf = require('../config/passport');
+var async = require('async');
+var Cart = require('../models/cart');
 
 router.get('/login',function (req,res,err) {
   if(req.user) return res.redirect('/home');
@@ -30,30 +32,42 @@ router.get('/signup',function (req,res,err) {
       errors:req.flash('errors')
     });
 });
-router.post('/signup',function (req,res,err) {
-    var user = new User();
-    user.profile.name = req.body.name;
-    user.email = req.body.email;
-    user.password = req.body.password;
-    User.findOne({email:req.body.email},function (err,existingUser) {
-        if(existingUser){
-          console.log("Email already exists");
-          req.flash('errors',"Email already exists");
-          return res.redirect('/signup');
-        }
-        else {
-          user.save(function (err,user) {
-              if(err)
-                return next(err);
-              else {
-                req.logIn(user,function (err) {
-                  if(err) return next(err);
-                  res.redirect('/home');
-                })
-              }
+router.post('/signup',function (req,res,next) {
+
+  async.waterfall([
+    function (callback) {
+      var user = new User();
+      user.profile.name = req.body.name;
+      user.email = req.body.email;
+      user.password = req.body.password;
+      User.findOne({email:req.body.email},function (err,existingUser) {
+          if(existingUser){
+            console.log("Email already exists");
+            req.flash('errors',"Email already exists");
+            return res.redirect('/signup');
+          }
+          else {
+            user.save(function (err,user) {
+                if(err)
+                  return next(err);
+                callback(null,user);
+            })
+          }
+      })
+  },
+    function (user) {
+      var cart = new Cart();
+      cart.owner = user.id;
+      cart.save(function (err) {
+          if(err) return next(err);
+          req.logIn(user,function (err) {
+                if(err) return next(err);
+                res.redirect('/home');
           })
-        }
-    })
+      })
+    }
+  ])
 });
+
 
 module.exports = router;

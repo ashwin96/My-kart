@@ -1,0 +1,26 @@
+<% layout('main/partiallayout') %>
+
+<% if(data.length===0) {%>
+<h2>Result not found</h2>
+<%}else{%>
+<h2>Results for <%= query %></h2>
+<div class="container">
+  <div class="row">
+    <%for(var i=0;i<data.length;i++) {%>
+    <div class="col-md-4">
+      <a href="/product/<%=data[i]._source.id%>">
+      <div class="thumbnail">
+        <img src="<%=data[i]._source.image%>">
+        <div class="caption">
+          <h4><%= data[i]._source.name %></h4>
+          <p><%= data[i]._source.category.name%></p>
+          <p>&#8377;<%=data[i]._source.price%></p>
+        </div>
+      </div>
+    </a>
+    </div>
+    <%}%>
+  </div>
+</div>
+
+<%}%>
